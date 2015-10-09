@@ -43,7 +43,7 @@ app.post('/locations', function (req, res) {
 
 });
 
-var server = app.listen(8080, function () {
+var server = app.listen(process.env.PORT || 8080, function () {
   var host = server.address().address;
   var port = server.address().port;
 
@@ -65,7 +65,7 @@ var Device = (function() {
           rs.push(row);
         });
         callback(rs);
-      }      
+      }
       dbh.all(query, onQuery);
     }
   }
@@ -116,9 +116,9 @@ var Location = (function() {
           device    = params.device,
           now       = new Date(),
           query     = "INSERT INTO locations (uuid, device_id, device_model, latitude, longitude, accuracy, altitude, speed, heading, activity_type, activity_confidence, battery_level, battery_is_charging, is_moving, geofence, recorded_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-      
+
       var sth       = dbh.prepare(query);
-      
+
       var insert = function(location) {
         var coords = location.coords,
             battery   = location.battery  || {level: null, is_charging: null},
@@ -129,11 +129,11 @@ var Location = (function() {
       }
       // Check for batchSync, ie: location: {...} OR location: [...]
       if (typeof(location.length) === 'number') {
-        // batchSync: true        
+        // batchSync: true
         for (var n=0,len=location.length;n<len;n++) {
-          insert(location[n]);          
+          insert(location[n]);
         }
-      } else {        
+      } else {
         // batchSync: false
         insert(location);
       }
@@ -153,18 +153,18 @@ function initDB(filename) {
     fs.mkdir("db", function(e) {
       fs.openSync(filename, "w");
     });
-    
-    
-    var dbh = new sqlite3.Database(filename);  
+
+
+    var dbh = new sqlite3.Database(filename);
 
     var LOCATIONS_COLUMNS = [
-      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL", 
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL",
       "uuid TEXT",
       "device_id TEXT",
       "device_model TEXT",
-      "latitude REAL", 
+      "latitude REAL",
       "longitude REAL",
-      "accuracy INTEGER", 
+      "accuracy INTEGER",
       "altitude REAL",
       "speed REAL",
       "heading REAL",
