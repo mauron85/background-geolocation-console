@@ -106,7 +106,7 @@ var Location = (function() {
 
       query = query.join(' ');
       if (params.start_date && params.end_date) {
-        dbh.all(query, params.start_date, params.end_date, params.device_id, onQuery)
+        dbh.all(query, new Date(params.start_date).getTime(), new Date(params.end_date).getTime(), params.device_id, onQuery)
       } else {
         dbh.all(query, onQuery);
       }
