@@ -45,7 +45,7 @@ var DataGrid = require('react-datagrid')
 
 // DataGrid columns
 var gridColumns = [
-  { name: 'device_id', title: 'Device ID', render: function(v) { return (v) ? v.split('-').pop() : '-'; }},
+  { name: 'device_id', title: 'Device ID', render: function(v) { return (v) ? [v.substr(0, 4), '***', v.substr(-4)].join('') : '-'; }},
   { name: 'uuid', title: 'UUID', width: 140, render: function(v) { return (v) ? v.split('-').pop() : '-'; }},
   { name: 'recorded_at', title: "Timestamp", render: Format.dateRenderer, width: 160},
   { name: 'created_at', title: 'Created at', render: Format.dateRenderer, width: 160},
@@ -56,11 +56,12 @@ var gridColumns = [
     if (!v) { return "-"; }
     return [rec.activity_type, " (", rec.activity_confidence, "%)"].join('');
   }},
-  { name: 'battery_level', textAlign: 'center', className: "battery", title: "Battery", width: 100, render: function(v, rec, cell) { 
+  { name: 'battery_level', textAlign: 'center', className: "battery", title: "Battery", width: 100, render: function(v, rec, cell) {
     if (!v) { return '-'; }
     cell.className = (rec.battery_is_charging) ? 'cell-green' : 'cell-red';
-    return (parseFloat(v,10)*100).toFixed(0) + '%';      
-  }}
+    return (parseFloat(v,10)*100).toFixed(0) + '%';
+  }},
+  { name: 'service_provider', title: 'Provider', render: function(v) { return (v) ? v : '-'; }}
 ];
 
 /*
@@ -94,7 +95,7 @@ var Map = React.createClass({
       currentPosition: null,
       currentPositionMarker: null,
       path: [],
-      devices: [],      
+      devices: [],
       markers: [{
         position: {
           lat: 25.0112183,
@@ -182,7 +183,7 @@ var Map = React.createClass({
     var ct    = React.findDOMNode(this.refs.container),
         map   = React.findDOMNode(this.refs.map),
         grid  = React.findDOMNode(this.refs.grid);
-    
+
     window.addEventListener("resize", resize);
 
     this.setState({
@@ -208,11 +209,11 @@ var Map = React.createClass({
       }
       map.style.height = cssHeight;
       grid.style.height = cssHeight;
-    }    
+    }
     resize();
 
     setTimeout(function() {
-      
+
     }, 500);
   },
   onLoadLocations: function(payload) {
@@ -266,7 +267,7 @@ var Map = React.createClass({
       }
       return marker;
     });
-    
+
     this.setState({
       center: {
         lat: currentPosition.latitude,
@@ -279,7 +280,7 @@ var Map = React.createClass({
     });
   },
   onLoadDevices: function(payload) {
-    var filter = this.getFilter(), 
+    var filter = this.getFilter(),
         deviceIndex = 0;
     if (!filter.device_id && payload.data.length) {
       filter.device_id = payload.data[0].device_id;
@@ -319,7 +320,7 @@ var Map = React.createClass({
     filter.start_date = startDate.toISOString();
     filter.end_date   = endDate.toISOString();
 
-    this.setFilter(filter);
+    // this.setFilter(filter);
 
     this.getFlux().actions.loadLocations(filter);
   },
@@ -411,7 +412,7 @@ var Map = React.createClass({
           <View column width="100%">
             <Tabs>
               <Tab label="Map">
-                <GoogleMap 
+                <GoogleMap
                   containerProps={{style: {width: "100%"}}}
                   ref="map"
                   defaultZoom={18}

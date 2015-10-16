@@ -1,5 +1,4 @@
+bluemix.sh
 node_modules
-js/bundle.js
 db
 .DS_Store
-

@@ -43,7 +43,7 @@ app.post('/locations', function (req, res) {
 
 });
 
-var server = app.listen(8080, function () {
+var server = app.listen(process.env.PORT || 8080, function () {
   var host = server.address().address;
   var port = server.address().port;
 
@@ -65,7 +65,7 @@ var Device = (function() {
           rs.push(row);
         });
         callback(rs);
-      }      
+      }
       dbh.all(query, onQuery);
     }
   }
@@ -106,7 +106,7 @@ var Location = (function() {
 
       query = query.join(' ');
       if (params.start_date && params.end_date) {
-        dbh.all(query, params.start_date, params.end_date, params.device_id, onQuery)
+        dbh.all(query, new Date(params.start_date).getTime(), new Date(params.end_date).getTime(), params.device_id, onQuery)
       } else {
         dbh.all(query, onQuery);
       }
@@ -115,25 +115,25 @@ var Location = (function() {
       var location  = params.location,
           device    = params.device,
           now       = new Date(),
-          query     = "INSERT INTO locations (uuid, device_id, device_model, latitude, longitude, accuracy, altitude, speed, heading, activity_type, activity_confidence, battery_level, battery_is_charging, is_moving, geofence, recorded_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-      
+          query     = "INSERT INTO locations (uuid, device_id, device_model, latitude, longitude, accuracy, altitude, speed, heading, activity_type, activity_confidence, battery_level, battery_is_charging, is_moving, geofence, recorded_at, created_at, service_provider) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
       var sth       = dbh.prepare(query);
-      
+
       var insert = function(location) {
         var coords = location.coords,
             battery   = location.battery  || {level: null, is_charging: null},
             activity  = location.activity || {type: null, confidence: null},
             geofence  = (location.geofence) ? JSON.stringify(location.geofence) : null;
 
-        sth.run(location.uuid, device.uuid, device.model, coords.latitude, coords.longitude, coords.accuracy, coords.altitude, coords.speed, coords.heading, activity.type, activity.confidence, battery.level, battery.is_charging, location.is_moving, geofence, location.timestamp, now);
+        sth.run(location.uuid, device.uuid, device.model, coords.latitude, coords.longitude, coords.accuracy, coords.altitude, coords.speed, coords.heading, activity.type, activity.confidence, battery.level, battery.is_charging, location.is_moving, geofence, location.timestamp, now, location.service_provider);
       }
       // Check for batchSync, ie: location: {...} OR location: [...]
       if (typeof(location.length) === 'number') {
-        // batchSync: true        
+        // batchSync: true
         for (var n=0,len=location.length;n<len;n++) {
-          insert(location[n]);          
+          insert(location[n]);
         }
-      } else {        
+      } else {
         // batchSync: false
         insert(location);
       }
@@ -153,18 +153,18 @@ function initDB(filename) {
     fs.mkdir("db", function(e) {
       fs.openSync(filename, "w");
     });
-    
-    
-    var dbh = new sqlite3.Database(filename);  
+
+
+    var dbh = new sqlite3.Database(filename);
 
     var LOCATIONS_COLUMNS = [
-      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL", 
+      "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL",
       "uuid TEXT",
       "device_id TEXT",
       "device_model TEXT",
-      "latitude REAL", 
+      "latitude REAL",
       "longitude REAL",
-      "accuracy INTEGER", 
+      "accuracy INTEGER",
       "altitude REAL",
       "speed REAL",
       "heading REAL",
@@ -175,7 +175,8 @@ function initDB(filename) {
       "is_moving BOOLEAN",
       "geofence TEXT",
       "recorded_at DATETIME",
-      "created_at DATETIME"
+      "created_at DATETIME",
+      "service_provider TEXT"
     ];
     dbh.serialize(function() {
       dbh.run("CREATE TABLE locations (" + LOCATIONS_COLUMNS.join(',') + ")");
