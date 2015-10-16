@@ -46,16 +46,16 @@ var DataGrid = require('react-datagrid')
 // DataGrid columns
 var gridColumns = [
   { name: 'device_id', title: 'Device ID', render: function(v) { return (v) ? [v.substr(0, 4), '***', v.substr(-4)].join('') : '-'; }},
+  { name: 'device_version', title: "Device Ver.", render: function(v) {
+    if (!v) { return "-"; }
+    return v;
+  }},
   { name: 'uuid', title: 'UUID', width: 140, render: function(v) { return (v) ? v.split('-').pop() : '-'; }},
   { name: 'recorded_at', title: "Timestamp", render: Format.dateRenderer, width: 160},
   { name: 'created_at', title: 'Created at', render: Format.dateRenderer, width: 160},
   { name: 'latitude', title: "Lat", width: 120},
   { name: 'longitude', title: "Lng", width: 120},
   { name: 'accuracy', textAlign: 'center', width: 100, render: function(v) { return parseFloat(v).toFixed(0); } },
-  { name: 'activity_type', title: "Activity", width: 150, render: function(v, rec, cell) {
-    if (!v) { return "-"; }
-    return [rec.activity_type, " (", rec.activity_confidence, "%)"].join('');
-  }},
   { name: 'battery_level', textAlign: 'center', className: "battery", title: "Battery", width: 100, render: function(v, rec, cell) {
     if (!v) { return '-'; }
     cell.className = (rec.battery_is_charging) ? 'cell-green' : 'cell-red';
@@ -301,7 +301,7 @@ var Map = React.createClass({
     return JSON.parse(window.localStorage.getItem('filter')) || {};
   },
   setFilter: function(filter) {
-    window.localStorage.setItem('filter', JSON.stringify(filter));
+    // window.localStorage.setItem('filter', JSON.stringify(filter));
   },
   onFilter: function() {
     var device    = this.refs.device,

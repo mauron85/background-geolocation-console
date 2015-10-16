@@ -112,10 +112,12 @@ var Location = (function() {
       }
     },
     create: function(params) {
-      var location  = params.location,
-          device    = params.device,
-          now       = new Date(),
-          query     = "INSERT INTO locations (uuid, device_id, device_model, latitude, longitude, accuracy, altitude, speed, heading, activity_type, activity_confidence, battery_level, battery_is_charging, is_moving, geofence, recorded_at, created_at, service_provider) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      var location, device, now, query;
+      params = params || {};
+      location  = params.location || {};
+      device    = params.device || {};
+      now       = new Date();
+      query     = "INSERT INTO locations (uuid, device_id, device_model, device_version, latitude, longitude, accuracy, altitude, speed, heading, activity_type, activity_confidence, battery_level, battery_is_charging, is_moving, geofence, recorded_at, created_at, service_provider) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
       var sth       = dbh.prepare(query);
 
@@ -125,7 +127,7 @@ var Location = (function() {
             activity  = location.activity || {type: null, confidence: null},
             geofence  = (location.geofence) ? JSON.stringify(location.geofence) : null;
 
-        sth.run(location.uuid, device.uuid, device.model, coords.latitude, coords.longitude, coords.accuracy, coords.altitude, coords.speed, coords.heading, activity.type, activity.confidence, battery.level, battery.is_charging, location.is_moving, geofence, location.timestamp, now, location.service_provider);
+        sth.run(location.uuid, device.uuid, device.model, device.version, coords.latitude, coords.longitude, coords.accuracy, coords.altitude, coords.speed, coords.heading, activity.type, activity.confidence, battery.level, battery.is_charging, location.is_moving, geofence, location.timestamp, now, location.service_provider);
       }
       // Check for batchSync, ie: location: {...} OR location: [...]
       if (typeof(location.length) === 'number') {
@@ -162,6 +164,7 @@ function initDB(filename) {
       "uuid TEXT",
       "device_id TEXT",
       "device_model TEXT",
+      "device_version TEXT",
       "latitude REAL",
       "longitude REAL",
       "accuracy INTEGER",
