@@ -25,9 +25,11 @@ var DevicesStore = Fluxxor.createStore({
     var device, device_id;
     // Re-format device_model, appending device_id, eg:  iPhone8,1 (61CA53C7)
     for (var n=0,len=result.data.length;n<len;n++) {
-      device = result.data[n];
+      device = result.data[n] || {};
       device_id = device.device_id || '';
-      device.device_model += " (" + [device_id.substr(0, 4), '***', device_id.substr(-4)].join('') + ")";
+      device.device_model = device.device_model || '';
+      device.device_model_short = device.device_model.split('-')[0];
+      device.device_model_short += " (" + [device_id.substr(0, 4), '***', device_id.substr(-4)].join('') + ")";
     }
     this.data = result.data;
   },
