@@ -64,6 +64,8 @@ var gridColumns = [
   { name: 'service_provider', title: 'Provider', render: function(v) { return (v) ? v : '-'; }}
 ];
 
+var appFilter = {}; // Mauron85: storing filter into locatlStorage seems buggy replacing with global filter (yeeah I know this is wrong)
+
 /*
  * Sample From: https://developers.google.com/maps/documentation/javascript/examples/map-simple
  *
@@ -298,9 +300,11 @@ var Map = React.createClass({
     this.onFilter();
   },
   getFilter: function() {
-    return JSON.parse(window.localStorage.getItem('filter')) || {};
+    return appFilter;
+    //JSON.parse(window.localStorage.getItem('filter')) || {};
   },
   setFilter: function(filter) {
+    appFilter = filter;
     // window.localStorage.setItem('filter', JSON.stringify(filter));
   },
   onFilter: function() {
@@ -320,7 +324,7 @@ var Map = React.createClass({
     filter.start_date = startDate.toISOString();
     filter.end_date   = endDate.toISOString();
 
-    // this.setFilter(filter);
+    this.setFilter(filter);
 
     this.getFlux().actions.loadLocations(filter);
   },
